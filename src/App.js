@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import {TransitionMotion, spring} from 'react-motion';
+
 import Card from './Card';
 import './App.css';
 
@@ -55,17 +57,39 @@ export default class App extends Component {
         })
     }
 
+    getDefaultStyles = () => {
+        return this.state.todos.map( function(todo) {
+            return Object.assign({}, todo, {style: {
+                height: 0,
+                opacity: 0
+            }});
+        })
+    }
+
+    getStyles = () => {
+        return this.state.todos.map( todo => {
+            return Object.assign({}, todo, {style: {
+                height: spring(65),
+                opacity: spring(1)
+            }});
+        })
+    }
+
+    willEnter = () => {
+        return {
+            height: 0,
+            opacity: 0
+        }
+    }
+
+    willLeave = () => {
+        return {
+            height: spring(0),
+            opacity: spring(0)
+        }
+    }
 
     render() {
-
-        const todos = this.state.todos.map( (todo, i) => {
-            return <Card 
-                        key={i}
-                        toggle={ this.toggle }
-                        removeTodo={ this.removeTodo } 
-                        todo={ todo } /> 
-        })
-
         return(
             <div className='app'>
                 <h1>to-dos</h1>
@@ -80,9 +104,27 @@ export default class App extends Component {
                                 /> 
                         </form>   
                     </div>
-                    <div>
-                        { todos }
-                    </div>  
+                    <TransitionMotion
+                        defaultStyles = { this.getDefaultStyles()}
+                        styles={this.getStyles()}
+                        willEnter={ this.willEnter}
+                        willLeave={ this.willLeave}
+                    >
+                    { (styles) => {
+                        return (
+                            <div>
+                                {styles.map( (todo) => {
+                                    return <Card 
+                                        key={todo.key}
+                                        toggle={ this.toggle }
+                                        removeTodo={ this.removeTodo } 
+                                        todo={ todo } /> 
+                                })}
+                            </div> 
+                        )
+                    }
+                    }
+                    </TransitionMotion> 
                 </div> 
             </div> 
         )
